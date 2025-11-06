@@ -24,7 +24,7 @@ app = modal.App("hider-gemma3-finetune-v2")
 # Define the container image with all dependencies
 image = (
     modal.Image.debian_slim(python_version="3.11")
-    .apt_install("git")  # Install git for installing Unsloth from GitHub
+    .apt_install("git")  # Install git for pip installations
     .pip_install(
         "torch==2.5.1",
         "transformers==4.46.3",
@@ -35,8 +35,9 @@ image = (
         "bitsandbytes==0.44.1",
         "scipy",
     )
-    .run_commands(
-        "pip install --upgrade --no-deps --force-reinstall git+https://github.com/unslothai/unsloth.git"
+    .pip_install(
+        # Install Unsloth properly with all dependencies
+        "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"
     )
 )
 
