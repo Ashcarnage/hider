@@ -45,6 +45,15 @@ image = (
 # Create a persistent volume to store the trained model
 volume = modal.Volume.from_name("hider-models", create_if_missing=True)
 
+# GPU Configuration
+# Choose your GPU based on speed vs cost tradeoff:
+# - "T4": $0.59/hr, 25min training, $0.25/run (slowest, cheapest)
+# - "L4": $0.80/hr, 17min training, $0.23/run (good balance)
+# - "A10G": $1.10/hr, 10min training, $0.18/run (faster, cheaper per run!)
+# - "A100": $2.10/hr, 6min training, $0.21/run (fastest, still cheap per run!)
+# - "A100:2": 2x A100 GPUs for even faster training (requires multi-GPU setup)
+GPU_CONFIG = "A100"  # Change this to your preferred GPU
+
 # Training configuration
 TRAINING_CONFIG = {
     "DATA_FILE": "hider_raw.jsonl",
@@ -52,8 +61,8 @@ TRAINING_CONFIG = {
     "OUTPUT_DIR": "/models/hider_sft",
     "MAX_SEQ_LENGTH": 2048,
     "EPOCHS": 15,
-    "BATCH_SIZE": 4,
-    "GRADIENT_ACCUMULATION_STEPS": 8,
+    "BATCH_SIZE": 8,  # Increased for A100's larger memory
+    "GRADIENT_ACCUMULATION_STEPS": 4,  # Reduced since batch size increased
     "LEARNING_RATE": 2e-4,
     "LORA_R": 16,
     "LORA_ALPHA": 16,
@@ -68,7 +77,7 @@ TRAINING_CONFIG = {
 
 @app.function(
     image=image,
-    gpu="T4",  # Use T4 GPU (free tier friendly)
+    gpu=GPU_CONFIG,  # Use configured GPU (A100 for speed!)
     volumes={"/models": volume},
     timeout=3600 * 3,  # 3 hour timeout
     secrets=[modal.Secret.from_name("huggingface-secret")],
