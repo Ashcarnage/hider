@@ -19,7 +19,7 @@ import os
 # ============================================================================
 
 # Create Modal app
-app = modal.App("hider-gemma3-finetune")
+app = modal.App("hider-gemma3-finetune-v2")
 
 # Define the container image with all dependencies
 image = (
