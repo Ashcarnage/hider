@@ -68,7 +68,6 @@ TRAINING_CONFIG = {
     gpu="T4",  # Use T4 GPU (free tier friendly)
     volumes={"/models": volume},
     timeout=3600 * 3,  # 3 hour timeout
-    secrets=[modal.Secret.from_name("huggingface-secret", required=False)],
 )
 def finetune_model():
     """
