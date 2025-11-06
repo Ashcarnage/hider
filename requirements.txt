@@ -1,0 +1,15 @@
+# Modal SDK for cloud GPU access
+modal>=0.63.0
+
+# Core ML libraries (installed in Modal container)
+torch>=2.5.1
+transformers>=4.46.3
+datasets>=3.1.0
+accelerate>=1.1.1
+peft>=0.13.2
+trl>=0.12.1
+bitsandbytes>=0.44.1
+scipy
+
+# Unsloth (installed from git in Modal image)
+# Will be installed via: pip install --upgrade --no-deps --force-reinstall git+https://github.com/unslothai/unsloth.git
