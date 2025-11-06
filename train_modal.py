@@ -69,6 +69,7 @@ TRAINING_CONFIG = {
     image=image,
     gpu="T4",  # Use T4 GPU (free tier friendly)
     volumes={"/models": volume},
+    mounts=[modal.Mount.from_local_file("hider_raw.jsonl", remote_path="/root/hider_raw.jsonl")],
     timeout=3600 * 3,  # 3 hour timeout
     secrets=[modal.Secret.from_name("huggingface-secret")],
 )
