@@ -39,6 +39,7 @@ image = (
         # Install Unsloth properly with all dependencies
         "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"
     )
+    .add_local_file("hider_raw.jsonl", "/root/hider_raw.jsonl")  # Add dataset file
 )
 
 # Create a persistent volume to store the trained model
@@ -69,7 +70,6 @@ TRAINING_CONFIG = {
     image=image,
     gpu="T4",  # Use T4 GPU (free tier friendly)
     volumes={"/models": volume},
-    mounts=[modal.Mount.from_local_file("hider_raw.jsonl", remote_path="/root/hider_raw.jsonl")],
     timeout=3600 * 3,  # 3 hour timeout
     secrets=[modal.Secret.from_name("huggingface-secret")],
 )
