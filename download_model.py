@@ -41,10 +41,39 @@ def main():
     print("(This is the model ready for inference)")
     print()
 
-    # List available files in volume
+    # List available files in volume (check root first)
     print("📋 Checking available files in Modal volume...")
-    for item in volume.listdir("/models/hider_sft"):
-        print(f"   - {item}")
+    try:
+        # First, check root directory
+        print("   Checking volume root...")
+        root_files = volume.listdir("/")
+        print(f"   Root contents: {root_files}")
+
+        # Then check models directory
+        if any("models" in str(f) for f in root_files):
+            print("   Checking /models directory...")
+            models_files = volume.listdir("/models")
+            print(f"   Models contents: {models_files}")
+
+            # Check hider_sft directory
+            if any("hider_sft" in str(f) for f in models_files):
+                print("   Checking /models/hider_sft directory...")
+                hider_files = volume.listdir("/models/hider_sft")
+                for item in hider_files:
+                    print(f"      - {item}")
+            else:
+                print("   ⚠️  hider_sft directory not found in /models")
+        else:
+            print("   ⚠️  models directory not found in volume root")
+    except Exception as e:
+        print(f"   ⚠️  Error listing files: {e}")
+        print("   The model might not have been saved during training.")
+        print()
+        print("💡 Possible solutions:")
+        print("   1. Check if training actually completed successfully")
+        print("   2. The volume might be empty - try training again")
+        print("   3. Check Modal dashboard: https://modal.com/storage")
+        return
     print()
 
     # Download both versions
