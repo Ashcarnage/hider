@@ -10,6 +10,7 @@ Usage:
 """
 
 import modal
+import os
 
 app = modal.App("download-hider-model")
 
@@ -21,8 +22,6 @@ def main():
     """
     Download the fine-tuned model to local directory.
     """
-    import os
-
     print("="*70)
     print("📥 DOWNLOADING FINE-TUNED MODEL FROM MODAL")
     print("="*70)
@@ -33,46 +32,17 @@ def main():
     os.makedirs(local_model_dir, exist_ok=True)
 
     print(f"📁 Local directory: {local_model_dir}")
-    print(f"☁️  Remote path: /models/hider_sft")
+    print(f"☁️  Remote path: /hider_sft")
     print()
 
-    # Download the merged 16-bit model (ready for inference)
-    print("Downloading merged 16-bit model...")
-    print("(This is the model ready for inference)")
-    print()
-
-    # List available files in volume (check root first)
+    # List available files in volume
     print("📋 Checking available files in Modal volume...")
     try:
-        # First, check root directory
-        print("   Checking volume root...")
-        root_files = volume.listdir("/")
-        print(f"   Root contents: {root_files}")
-
-        # Then check models directory
-        if any("models" in str(f) for f in root_files):
-            print("   Checking /models directory...")
-            models_files = volume.listdir("/models")
-            print(f"   Models contents: {models_files}")
-
-            # Check hider_sft directory
-            if any("hider_sft" in str(f) for f in models_files):
-                print("   Checking /models/hider_sft directory...")
-                hider_files = volume.listdir("/models/hider_sft")
-                for item in hider_files:
-                    print(f"      - {item}")
-            else:
-                print("   ⚠️  hider_sft directory not found in /models")
-        else:
-            print("   ⚠️  models directory not found in volume root")
+        for item in volume.listdir("/hider_sft"):
+            print(f"   - {item}")
     except Exception as e:
-        print(f"   ⚠️  Error listing files: {e}")
-        print("   The model might not have been saved during training.")
-        print()
-        print("💡 Possible solutions:")
-        print("   1. Check if training actually completed successfully")
-        print("   2. The volume might be empty - try training again")
-        print("   3. Check Modal dashboard: https://modal.com/storage")
+        print(f"   ⚠️  Error: {e}")
+        print("   Model files not found in volume!")
         return
     print()
 
@@ -80,21 +50,36 @@ def main():
     print("⬇️  Downloading models (this may take a few minutes)...")
     print()
 
+    # Use absolute paths
+    lora_dir = os.path.abspath(os.path.join(local_model_dir, "hider_sft_lora"))
+    merged_dir = os.path.abspath(os.path.join(local_model_dir, "hider_sft_merged"))
+
+    print(f"   LoRA destination: {lora_dir}")
+    print(f"   Merged destination: {merged_dir}")
+    print()
+
     # Download LoRA adapters
     print("1. Downloading LoRA adapters...")
-    volume.copy_files(
-        "/models/hider_sft/final_model",
-        local_model_dir + "/hider_sft_lora"
-    )
-    print("   ✅ LoRA adapters downloaded!")
+    try:
+        # Modal's copy_files will create the destination directory
+        volume.copy_files(
+            "/hider_sft/final_model",  # Source in Modal volume (no trailing slash)
+            lora_dir                    # Destination on local machine
+        )
+        print("   ✅ LoRA adapters downloaded!")
+    except Exception as e:
+        print(f"   ⚠️  Error downloading LoRA adapters: {e}")
 
     # Download merged model
     print("2. Downloading merged 16-bit model...")
-    volume.copy_files(
-        "/models/hider_sft/final_model_merged_16bit",
-        local_model_dir + "/hider_sft_merged"
-    )
-    print("   ✅ Merged model downloaded!")
+    try:
+        volume.copy_files(
+            "/hider_sft/final_model_merged_16bit",  # Source in Modal volume
+            merged_dir                               # Destination on local machine
+        )
+        print("   ✅ Merged model downloaded!")
+    except Exception as e:
+        print(f"   ⚠️  Error downloading merged model: {e}")
 
     print()
     print("="*70)
@@ -102,8 +87,9 @@ def main():
     print("="*70)
     print()
     print(f"📁 Models saved to:")
-    print(f"   LoRA adapters: {local_model_dir}/hider_sft_lora/")
-    print(f"   Merged model:  {local_model_dir}/hider_sft_merged/")
+    print(f"   LoRA adapters: {lora_dir}/")
+    print(f"   Merged model:  {merged_dir}/")
     print()
     print("💡 You can now use these models for inference!")
+    print("   Run: python test_model_local.py")
     print()
