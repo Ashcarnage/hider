@@ -286,7 +286,21 @@ def finetune_model():
     print(f"✅ Merged 16-bit model saved to: {merged_model_path}")
 
     # Commit volume changes
-    volume.commit()
+    print("\n💾 Committing changes to Modal volume...")
+    try:
+        volume.commit()
+        print("✅ Volume committed successfully!")
+    except Exception as e:
+        print(f"⚠️  Error committing volume: {e}")
+        print("   Model may not be persisted!")
+
+    # Verify files were saved
+    print("\n🔍 Verifying saved files...")
+    import os
+    if os.path.exists(final_model_path):
+        print(f"✅ LoRA model exists: {final_model_path}")
+    if os.path.exists(merged_model_path):
+        print(f"✅ Merged model exists: {merged_model_path}")
 
     print("\n" + "="*70)
     print("🎉 FINE-TUNING COMPLETED SUCCESSFULLY!")
